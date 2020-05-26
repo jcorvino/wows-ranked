@@ -102,7 +102,8 @@ ranks = {
     }
 }
 start_rank = max(ranks.keys())
-end_rank = min(ranks.keys())
+# end_rank = min(ranks.keys())
+end_rank = 17
 
 
 def one_run(wr, fr, max_battles=DEFAULT_MAX_BATTLES):
@@ -149,23 +150,26 @@ def one_run(wr, fr, max_battles=DEFAULT_MAX_BATTLES):
     return battles
 
 
-# create list
-s = []
-for i in range(DEFAULT_SIMULATION_RUNS):
-    n = one_run(DEFAULT_WIN_RATE, DEFAULT_FIRST_RATE)
-    s.append(n)
+if __name__ == '__main__':
+    # TODO: Add user args
+
+    results = [one_run(DEFAULT_WIN_RATE, DEFAULT_FIRST_RATE) for _ in range(DEFAULT_SIMULATION_RUNS)]
     # TODO: Add histogram bin for ">max battles limit" so we're not removing valid simulation data.
 
+    # Create histogram bins/data
+    data = Counter(results)
+    count = sum(data.values())
+    x = data.keys()
+    y = [100 * data[key] / count for key in x]  # convert to prob density function (%)
 
-# draw
-optbins = max(s) - min(s)  # determines bin number for 1:1 bins
+    optbins = max(results) - min(results)  # determines bin number for 1:1 bins
 
-fig = plt.figure()
-fig.suptitle(f'Battles needed to reach Rank {end_rank} starting from Rank {start_rank}:')
-plt.title(f'Assumes {DEFAULT_WIN_RATE:.0%} win rate and {DEFAULT_FIRST_RATE:.0%} chance of keeping star after a loss.')
-# plt.hist(s, density=True)  # TODO: stop using "density" and create the distribution ourselves.
-plt.hist(s, bins=optbins, range=(0, max(s)))  # TODO: stop using "density" and create the distribution ourselves.
-plt.xlabel('Required Battles')
-plt.ylabel('Percent')  # TODO: Doesn't currently show %. Need to multiply by 100.
+    # Draw figure
+    fig = plt.figure()
+    fig.suptitle(f'Battles needed to reach Rank {end_rank} starting from Rank {start_rank}:')
+    plt.title(f'Assumes {DEFAULT_WIN_RATE:.0%} win rate and {DEFAULT_FIRST_RATE:.0%} chance of keeping star after a loss.')
+    plt.bar(x, y)  # TODO: support multiple plots?
+    plt.xlabel('Required Battles')
+    plt.ylabel('Percent Chance')
 
-plt.savefig('wows-ranked-simulation.png', dpi=300)
+    plt.savefig('wows-ranked-simulation.png', dpi=300)
