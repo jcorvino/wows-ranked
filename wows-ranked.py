@@ -1,40 +1,149 @@
 import random
+from collections import Counter
 import matplotlib.pyplot as plt
 
-# configuration
+# Configuration
 DEFAULT_FIRST_RATE = 1 / 7  # chance to get 1st place in a battle
 DEFAULT_WIN_RATE = 0.5  # chance to win a battle
 DEFAULT_MAX_BATTLES = 10000  # maximum number of battles before simulation stops
-TOTAL_STARS = 55
-ranks = {  # TODO: Include all ranks. dict should hold data about stars in each rank and if the rank is irrevocable.
+DEFAULT_SIMULATION_RUNS = 5000  # number of times to run the simulation
+
+# Season 16 rank information
+ranks = {
+    18: {
+        'stars': 1,
+        'irrevocable': True,
+        'free-star': False
+    },
+    17: {
+        'stars': 2,
+        'irrevocable': True,
+        'free-star': True
+    },
+    16: {
+        'stars': 2,
+        'irrevocable': True,
+        'free-star': True
+    },
+    15: {
+        'stars': 2,
+        'irrevocable': True,
+        'free-star': True
+    },
+    14: {
+        'stars': 2,
+        'irrevocable': False,
+        'free-star': True
+    },
+    13: {
+        'stars': 2,
+        'irrevocable': False,
+        'free-star': True
+    },
+    12: {
+        'stars': 2,
+        'irrevocable': True,
+        'free-star': True
+    },
+    11: {
+        'stars': 2,
+        'irrevocable': False,
+        'free-star': True
+    },
+    10: {
+        'stars': 4,
+        'irrevocable': False,
+        'free-star': True
+    },
+    9: {
+        'stars': 4,
+        'irrevocable': False,
+        'free-star': True
+    },
+    8: {
+        'stars': 4,
+        'irrevocable': False,
+        'free-star': True
+    },
+    7: {
+        'stars': 4,
+        'irrevocable': False,
+        'free-star': True
+    },
+    6: {
+        'stars': 4,
+        'irrevocable': False,
+        'free-star': True
+    },
+    5: {
+        'stars': 5,
+        'irrevocable': False,
+        'free-star': True
+    },
+    4: {
+        'stars': 5,
+        'irrevocable': False,
+        'free-star': True
+    },
+    3: {
+        'stars': 5,
+        'irrevocable': False,
+        'free-star': True
+    },
+    2: {
+        'stars': 5,
+        'irrevocable': False,
+        'free-star': True
+    },
+    1: {
+        'stars': 1,
+        'irrevocable': True,
+        'free-star': True
+    }
 }
+start_rank = max(ranks.keys())
+end_rank = min(ranks.keys())
 
 
-def one_run(wr=DEFAULT_WIN_RATE, fr=DEFAULT_FIRST_RATE):
+def one_run(wr, fr, max_battles=DEFAULT_MAX_BATTLES):
     """
-    Simulate battles required to reach rank 1 starting from rank 12.
+    Simulate battles required to complete ranked season.
 
     :param wr: win rate
     :param fr: first place rate
+    :param max_battles: maximum battles before simulation ends (prevents infinite loops).
     :return: number of battles
     """
     battles = 0
     stars = 0
-    while stars < TOTAL_STARS:
+    simulated_rank = start_rank
+
+    while simulated_rank != end_rank:
         battles += 1
+
+        # Determine battle outcome
         if random.random() < wr:
             stars += 1
-            if stars % 2 == 0 and stars <= 4:
-                stars += 1
-            elif stars % 4 == 0 and stars <= 24 and stars > 4:
-                 stars += 1
-            elif stars % 5 == 0 and stars > 24:
-                 stars += 1
-        else:
-            if random.random() < fr and stars > 0:  # best player doesn't lose star + stars can't go below irrevocable
-                stars -= 1
+        elif random.random() < fr:  # best player doesn't lose star
+            stars -= 1
 
-        if battles > DEFAULT_MAX_BATTLES:
+        # Check if player moved up a rank
+        if stars == ranks[simulated_rank]['stars']:
+            simulated_rank -= 1  # move "up" a rank
+            if ranks[simulated_rank]['free-star']:
+                stars = 1  # get a free star for next rank
+            else:
+                stars = 0  # no free star
+
+        # Check if a player moved down a rank
+        if stars < 0:
+            if ranks[simulated_rank]['irrevocable']:
+                stars = 0
+            else:
+                simulated_rank += 1  # move "down" a rank
+                stars = ranks[simulated_rank]['stars'] - 1
+
+        if battles > max_battles:
             break
 
     return battles
@@ -42,21 +151,21 @@ def one_run(wr=DEFAULT_WIN_RATE, fr=DEFAULT_FIRST_RATE):
 
 # create list
 s = []
-for i in range(2):
-    n = one_run()
+for i in range(DEFAULT_SIMULATION_RUNS):
+    n = one_run(DEFAULT_WIN_RATE, DEFAULT_FIRST_RATE)
+    s.append(n)
     # TODO: Add histogram bin for ">max battles limit" so we're not removing valid simulation data.
-    if n <= DEFAULT_MAX_BATTLES:  # ignore cases that exceed max battles limit.
-        s.append(n)
+
 
 # draw
-s.sort()  # TODO: Find a better way to bin. Sort is too slow.
-optbins = s[len(s)-1]-s[0]  # determines bin number for 1:1 bins
+optbins = max(s) - min(s)  # determines bin number for 1:1 bins
 
 fig = plt.figure()
-fig.suptitle('Battles needed to reach Rank 1 starting from Rank 12:')
+fig.suptitle(f'Battles needed to reach Rank {end_rank} starting from Rank {start_rank}:')
 plt.title(f'Assumes {DEFAULT_WIN_RATE:.0%} win rate and {DEFAULT_FIRST_RATE:.0%} chance of keeping star after a loss.')
-plt.hist(s, bins=optbins, density=True)  # TODO: stop using "density" and create the distribution ourselves.
+# plt.hist(s, density=True)  # TODO: stop using "density" and create the distribution ourselves.
+plt.hist(s, bins=optbins, range=(0, max(s)))  # TODO: stop using "density" and create the distribution ourselves.
 plt.xlabel('Required Battles')
-plt.ylabel('Percent')
+plt.ylabel('Percent')  # TODO: Doesn't currently show %. Need to multiply by 100.
 
 plt.savefig('wows-ranked-simulation.png', dpi=300)
