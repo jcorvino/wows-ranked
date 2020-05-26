@@ -1,8 +1,9 @@
 import random
+import argparse
 from collections import Counter
 import matplotlib.pyplot as plt
 
-# Configuration
+# Defaults
 DEFAULT_FIRST_RATE = 1 / 7  # chance to get 1st place in a battle
 DEFAULT_WIN_RATE = 0.5  # chance to win a battle
 DEFAULT_MAX_BATTLES = 10000  # maximum number of battles before simulation stops
@@ -102,8 +103,7 @@ ranks = {
     }
 }
 start_rank = max(ranks.keys())
-# end_rank = min(ranks.keys())
-end_rank = 17
+end_rank = min(ranks.keys())
 
 
 def one_run(wr, fr, max_battles=DEFAULT_MAX_BATTLES):
@@ -142,7 +142,7 @@ def one_run(wr, fr, max_battles=DEFAULT_MAX_BATTLES):
                 stars = 0
             else:
                 simulated_rank += 1  # move "down" a rank
-                stars = ranks[simulated_rank]['stars'] - 1
+                stars = ranks[simulated_rank]['stars'] - 1  # 1 star away from next rank
 
         if battles > max_battles:
             break
@@ -151,25 +151,63 @@ def one_run(wr, fr, max_battles=DEFAULT_MAX_BATTLES):
 
 
 if __name__ == '__main__':
-    # TODO: Add user args
+    # Get user inputs
+    parser = argparse.ArgumentParser(
+        description='A program to simulate number of battles required to complete the World of Warships Ranked Season.'
+    )
+    parser.add_argument(
+        '-w',
+        '--win-rate',
+        metavar='win-rate',
+        type=float,
+        default=DEFAULT_WIN_RATE,
+        help='Chance of a player winning a game (enter as a decimal). For example a 55%% win rate is 0.55. Default: %(default).2f'
+    )
+    parser.add_argument(
+        '-f',
+        '--first-rate',
+        metavar='first-rate',
+        type=float,
+        default=DEFAULT_FIRST_RATE,
+        help='Chance of a player getting first place (enter as a decimal). For example a 10%% first place rate is 0.1. Default: %(default).2f'
+    )
+    parser.add_argument(
+        '-m',
+        '--max-battles',
+        metavar='max-battles',
+        type=int,
+        default=DEFAULT_MAX_BATTLES,
+        help='Maximum number of battles in a single simulation. Default: %(default)d'
+    )
+    parser.add_argument(
+        '-s',
+        '--simulations',
+        metavar='simulations',
+        type=int,
+        default=DEFAULT_SIMULATION_RUNS,
+        help='Number of simulations to run. Default: %(default)d'
+    )
+    args = parser.parse_args()
+    win_rate = args.win_rate
+    first_rate = args.first_rate
+    max_battles = args.max_battles
+    num_simulations = args.simulations
 
-    results = [one_run(DEFAULT_WIN_RATE, DEFAULT_FIRST_RATE) for _ in range(DEFAULT_SIMULATION_RUNS)]
-    # TODO: Add histogram bin for ">max battles limit" so we're not removing valid simulation data.
+    # Run simulation
+    results = [one_run(win_rate, first_rate, max_battles=max_battles) for _ in range(num_simulations)]
+    # TODO: Add histogram bin for ">max battles limit"
 
     # Create histogram bins/data
     data = Counter(results)
     count = sum(data.values())
-    x = data.keys()
+    x = list(range(max(data.keys()) + 1))  # This ensures that all bins from 0 to max battles are created
     y = [100 * data[key] / count for key in x]  # convert to prob density function (%)
-
-    optbins = max(results) - min(results)  # determines bin number for 1:1 bins
 
     # Draw figure
     fig = plt.figure()
     fig.suptitle(f'Battles needed to reach Rank {end_rank} starting from Rank {start_rank}:')
-    plt.title(f'Assumes {DEFAULT_WIN_RATE:.0%} win rate and {DEFAULT_FIRST_RATE:.0%} chance of keeping star after a loss.')
-    plt.bar(x, y)  # TODO: support multiple plots?
+    plt.title(f'Assumes {win_rate:.0%} win rate and {first_rate:.0%} chance of keeping star after a loss.')
+    plt.bar(x, y, align='edge')  # TODO: support multiple plots?
     plt.xlabel('Required Battles')
     plt.ylabel('Percent Chance')
-
-    plt.savefig('wows-ranked-simulation.png', dpi=300)
+    plt.savefig(f'wows-ranked-simulation-{win_rate * 100:.0f}wr-{first_rate * 100:.0f}fr.png', dpi=300)

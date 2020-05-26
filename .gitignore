@@ -1,5 +1,6 @@
-# Saved plots
+# Ignore saved plots execpt the github example
 *.png
+!/images/example.png
 
 # PyCharm IDE files
 .idea/
