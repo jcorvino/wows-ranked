@@ -188,13 +188,9 @@ if __name__ == '__main__':
         help='Number of simulations to run. Default: %(default)d'
     )
     args = parser.parse_args()
-    win_rate = args.win_rate
-    first_rate = args.first_rate
-    max_battles = args.max_battles
-    num_simulations = args.simulations
 
     # Run simulation
-    results = [one_run(win_rate, first_rate, max_battles=max_battles) for _ in range(num_simulations)]
+    results = [one_run(args.win_rate, args.first_rate, max_battles=args.max_battles) for _ in range(args.simulations)]
     # TODO: Add histogram bin for ">max battles limit"
 
     # Create histogram bins/data
@@ -206,8 +202,8 @@ if __name__ == '__main__':
     # Draw figure
     fig = plt.figure()
     fig.suptitle(f'Battles needed to reach Rank {end_rank} starting from Rank {start_rank}:')
-    plt.title(f'Assumes {win_rate:.0%} win rate and {first_rate:.0%} chance of keeping star after a loss.')
+    plt.title(f'Assumes {args.win_rate:.0%} win rate and {args.first_rate:.0%} chance of keeping star after a loss.')
     plt.bar(x, y, align='edge')  # TODO: support multiple plots?
     plt.xlabel('Required Battles')
     plt.ylabel('Percent Chance')
-    plt.savefig(f'wows-ranked-simulation-{win_rate * 100:.0f}wr-{first_rate * 100:.0f}fr.png', dpi=300)
+    plt.savefig(f'wows-ranked-simulation-{args.win_rate * 100:.0f}wr-{args.first_rate * 100:.0f}fr.png', dpi=300)
