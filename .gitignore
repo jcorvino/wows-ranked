@@ -1,3 +1,6 @@
+# Saved plots
+*.png
+
 # PyCharm IDE files
 .idea/
 
