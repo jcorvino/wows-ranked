@@ -1,13 +1,15 @@
 import random
 import argparse
+import multiprocessing as mp
 from collections import Counter
 import matplotlib.pyplot as plt
+
 
 # Defaults
 DEFAULT_FIRST_RATE = 1 / 7  # chance to get 1st place in a battle
 DEFAULT_WIN_RATE = 0.5  # chance to win a battle
 DEFAULT_MAX_BATTLES = 10000  # maximum number of battles before simulation stops
-DEFAULT_SIMULATION_RUNS = 5000  # number of times to run the simulation
+DEFAULT_SIMULATION_RUNS = 50000  # number of times to run the simulation
 
 # Season 16 rank information
 # Assumes rank 18-11 give a free star same as season 15 https://worldofwarships.com/en/news/general-news/ranked-15/
@@ -189,13 +191,30 @@ if __name__ == '__main__':
         default=DEFAULT_SIMULATION_RUNS,
         help='Number of simulations to run. Default: %(default)d'
     )
+    parser.add_argument(
+        '-o',
+        '--outfile',
+        metavar='outfile',
+        type=str,
+        default=None,
+        help='Name of output file.'
+    )
     args = parser.parse_args()
 
     # Run simulation
-    results = [one_run(args.win_rate, args.first_rate, max_battles=args.max_battles) for _ in range(args.simulations)]
-    # TODO: Add histogram bin for ">max battles limit"
+    pool_size = mp.cpu_count()
+    results = []
+    with mp.Pool(processes=pool_size) as pool:
+        pool.starmap_async(
+            one_run,
+            [(args.win_rate, args.first_rate, args.max_battles)] * args.simulations,
+            callback=results.extend
+        )
+        pool.close()
+        pool.join()
 
     # Create histogram bins/data
+    # TODO: Add histogram bin for ">max battles limit"
     data = Counter(results)
     count = sum(data.values())
     x = list(range(max(data.keys()) + 1))  # This ensures that all bins from 0 to max battles are created
@@ -208,4 +227,8 @@ if __name__ == '__main__':
     plt.bar(x, y, align='edge')  # TODO: support multiple plots?
     plt.xlabel('Required Battles')
     plt.ylabel('Percent Chance')
-    plt.savefig(f'wows-ranked-simulation-{args.win_rate * 100:.0f}wr-{args.first_rate * 100:.0f}fr.png', dpi=300)
+    if args.outfile is None:
+        filename = f'wows-ranked-simulation-{args.win_rate * 100:.0f}wr-{args.first_rate * 100:.0f}fr.png'
+    else:
+        filename = args.outfile
+    plt.savefig(filename, dpi=300)

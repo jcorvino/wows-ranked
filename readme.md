@@ -3,14 +3,15 @@ This project estimates the number of battles needed to get to rank 1 in World of
 
 # Example Usage:
 ```bash
-python wows-ranked.py -w 0.5 -f 0.15 -m 1000 -s 5000
+python wows-ranked.py -w 0.55 -f 0.20 -m 3000 -s 20000 -o example.png
 ```
 
 This will run the program with the following settings:
-* a player win rate of 0.5 (50% chance of winning a battle), 
-* a first place rate of 0.15 (15% chance of getting first place in a battle),
-* a maximum of 1,000 battles per simulation (to prevent infinite loops),
-* and 5,000 simulation runs.
+* a player win rate of 0.55 (55% chance of winning a battle), 
+* a first place rate of 0.20 (20% chance of getting first place in a battle),
+* a maximum of 3,000 battles per simulation (to prevent infinite loops),
+* and 10,000 simulation runs.
+* The plot will be saved as a file called "example.png"
 
 Run `python wows-ranked.py -h` for the full help menu.
 
