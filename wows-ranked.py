@@ -231,4 +231,4 @@ if __name__ == '__main__':
         filename = f'wows-ranked-simulation-{args.win_rate * 100:.0f}wr-{args.first_rate * 100:.0f}fr.png'
     else:
         filename = args.outfile
-    plt.savefig(filename, dpi=300)
+    plt.savefig(filename, dpi=500)
