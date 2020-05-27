@@ -10,6 +10,9 @@ DEFAULT_MAX_BATTLES = 10000  # maximum number of battles before simulation stops
 DEFAULT_SIMULATION_RUNS = 5000  # number of times to run the simulation
 
 # Season 16 rank information
+# Assumes rank 18-11 give a free star same as season 15 https://worldofwarships.com/en/news/general-news/ranked-15/
+# TODO: Fix rank 17 logic since stars can't be lost (see https://worldofwarships.com/en/news/general-news/ranked-15/).
+
 ranks = {
     18: {
         'stars': 1,
@@ -54,47 +57,47 @@ ranks = {
     10: {
         'stars': 4,
         'irrevocable': False,
-        'free-star': True
+        'free-star': False
     },
     9: {
         'stars': 4,
         'irrevocable': False,
-        'free-star': True
+        'free-star': False
     },
     8: {
         'stars': 4,
         'irrevocable': False,
-        'free-star': True
+        'free-star': False
     },
     7: {
         'stars': 4,
         'irrevocable': False,
-        'free-star': True
+        'free-star': False
     },
     6: {
         'stars': 4,
         'irrevocable': False,
-        'free-star': True
+        'free-star': False
     },
     5: {
         'stars': 5,
         'irrevocable': False,
-        'free-star': True
+        'free-star': False
     },
     4: {
         'stars': 5,
         'irrevocable': False,
-        'free-star': True
+        'free-star': False
     },
     3: {
         'stars': 5,
         'irrevocable': False,
-        'free-star': True
+        'free-star': False
     },
     2: {
         'stars': 5,
         'irrevocable': False,
-        'free-star': True
+        'free-star': False
     },
     1: {
         'stars': 1,
@@ -121,12 +124,14 @@ def one_run(wr, fr, max_battles=DEFAULT_MAX_BATTLES):
 
     while simulated_rank != end_rank:
         battles += 1
+        if battles > max_battles:
+            break
 
         # Determine battle outcome
         if random.random() < wr:
-            stars += 1
-        elif random.random() < fr:  # best player doesn't lose star
-            stars -= 1
+            stars += 1  # win
+        elif random.random() >= fr:  # best player doesn't lose star
+            stars -= 1  # loss and no star saved
 
         # Check if player moved up a rank
         if stars == ranks[simulated_rank]['stars']:
@@ -143,9 +148,6 @@ def one_run(wr, fr, max_battles=DEFAULT_MAX_BATTLES):
             else:
                 simulated_rank += 1  # move "down" a rank
                 stars = ranks[simulated_rank]['stars'] - 1  # 1 star away from next rank
-
-        if battles > max_battles:
-            break
 
     return battles
 

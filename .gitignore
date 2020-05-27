@@ -1,4 +1,4 @@
-# Ignore saved plots execpt the github example
+# Ignore saved plots except the github example
 *.png
 !/images/example.png
 
