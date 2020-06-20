@@ -13,10 +13,20 @@ This will run the program with the following settings:
 * and 10,000 simulation runs.
 * The plot will be saved as a file called "example.png"
 
+Adding a `--sprint` flag will simulate a ranked sprint season instead of the regular ranked season.
+
 Run `python wows-ranked.py -h` for the full help menu.
 
 # Example Output:
-![Example histogram][example]
+```bash
+python wows-ranked.py -w 0.55 -f 0.20 -m 3000 -s 20000 -o .\images\example-regular.png
+```
+![Example histogram][example-regular]
+
+```bash
+python wows-ranked.py -w 0.55 -f 0.20 -m 3000 -s 20000 --sprint -o .\images\example-sprint.png
+```
+![Example histogram][example-sprint]
 
 
 # Requirements:
@@ -26,4 +36,5 @@ The project uses Python 3.8 and matplotlib. See [requirements.txt](https://githu
 Original version by player Terror_Tost from the EU server.
 
 
-[example]: https://github.com/jcorvino/wows-ranked/raw/master/images/example.png "Example histogram"
+[example-regular]: https://github.com/jcorvino/wows-ranked/raw/master/images/example-regular.png "Example histogram for regular ranked season"
+[example-sprint]: https://github.com/jcorvino/wows-ranked/raw/master/images/example-sprint.png "Example histogram for ranked sprint season"

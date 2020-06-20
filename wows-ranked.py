@@ -4,6 +4,8 @@ import multiprocessing as mp
 from collections import Counter
 import matplotlib.pyplot as plt
 
+from ranks import regular_ranks, sprint_ranks
+
 
 # Defaults
 DEFAULT_FIRST_RATE = 1 / 7  # chance to get 1st place in a battle
@@ -11,112 +13,17 @@ DEFAULT_WIN_RATE = 0.5  # chance to win a battle
 DEFAULT_MAX_BATTLES = 10000  # maximum number of battles before simulation stops
 DEFAULT_SIMULATION_RUNS = 50000  # number of times to run the simulation
 
-# Season 16 rank information
-# Assumes rank 18-11 give a free star same as season 15 https://worldofwarships.com/en/news/general-news/ranked-15/
-# TODO: Fix rank 17 logic since stars can't be lost (see https://worldofwarships.com/en/news/general-news/ranked-15/).
 
-ranks = {
-    18: {
-        'stars': 1,
-        'irrevocable': True,
-        'free-star': False
-    },
-    17: {
-        'stars': 2,
-        'irrevocable': True,
-        'free-star': True
-    },
-    16: {
-        'stars': 2,
-        'irrevocable': True,
-        'free-star': True
-    },
-    15: {
-        'stars': 2,
-        'irrevocable': True,
-        'free-star': True
-    },
-    14: {
-        'stars': 2,
-        'irrevocable': False,
-        'free-star': True
-    },
-    13: {
-        'stars': 2,
-        'irrevocable': False,
-        'free-star': True
-    },
-    12: {
-        'stars': 2,
-        'irrevocable': True,
-        'free-star': True
-    },
-    11: {
-        'stars': 2,
-        'irrevocable': False,
-        'free-star': True
-    },
-    10: {
-        'stars': 4,
-        'irrevocable': False,
-        'free-star': False
-    },
-    9: {
-        'stars': 4,
-        'irrevocable': False,
-        'free-star': False
-    },
-    8: {
-        'stars': 4,
-        'irrevocable': False,
-        'free-star': False
-    },
-    7: {
-        'stars': 4,
-        'irrevocable': False,
-        'free-star': False
-    },
-    6: {
-        'stars': 4,
-        'irrevocable': False,
-        'free-star': False
-    },
-    5: {
-        'stars': 5,
-        'irrevocable': False,
-        'free-star': False
-    },
-    4: {
-        'stars': 5,
-        'irrevocable': False,
-        'free-star': False
-    },
-    3: {
-        'stars': 5,
-        'irrevocable': False,
-        'free-star': False
-    },
-    2: {
-        'stars': 5,
-        'irrevocable': False,
-        'free-star': False
-    },
-    1: {
-        'stars': 1,
-        'irrevocable': True,
-        'free-star': True
-    }
-}
-start_rank = max(ranks.keys())
-end_rank = min(ranks.keys())
-
-
-def one_run(wr, fr, max_battles=DEFAULT_MAX_BATTLES):
+def one_run(wr: float, fr: float, ranks: dict, start_rank: int, end_rank: int,
+            max_battles: int) -> int:
     """
     Simulate battles required to complete ranked season.
 
     :param wr: win rate
     :param fr: first place rate
+    :param ranks: information on stars in each rank
+    :param start_rank: initial rank for the simulation
+    :param end_rank: final rank (simulation ends when reaching this rank)
     :param max_battles: maximum battles before simulation ends (prevents infinite loops).
     :return: number of battles
     """
@@ -150,7 +57,6 @@ def one_run(wr, fr, max_battles=DEFAULT_MAX_BATTLES):
             else:
                 simulated_rank += 1  # move "down" a rank
                 stars = ranks[simulated_rank]['stars'] - 1  # 1 star away from next rank
-
     return battles
 
 
@@ -199,7 +105,25 @@ if __name__ == '__main__':
         default=None,
         help='Name of output file.'
     )
+    parser.add_argument(
+        '--sprint',
+        action='store_true',
+        help='Use this flag to simulate ranked sprint season. \
+        By default the program will simulate a normal ranked season.'
+    )
     args = parser.parse_args()
+
+    # Get ranked type
+    if args.sprint:
+        ranks = sprint_ranks
+        rank_type = 'sprint'
+    else:
+        ranks = regular_ranks
+        rank_type = 'regular'
+
+    # Get start and stop rank
+    start_rank = max(ranks.keys())
+    end_rank = min(ranks.keys())
 
     # Run simulation
     pool_size = mp.cpu_count()
@@ -207,7 +131,7 @@ if __name__ == '__main__':
     with mp.Pool(processes=pool_size) as pool:
         pool.starmap_async(
             one_run,
-            [(args.win_rate, args.first_rate, args.max_battles)] * args.simulations,
+            [(args.win_rate, args.first_rate, ranks, start_rank, end_rank, args.max_battles)] * args.simulations,
             callback=results.extend
         )
         pool.close()
@@ -222,13 +146,13 @@ if __name__ == '__main__':
 
     # Draw figure
     fig = plt.figure()
-    fig.suptitle(f'Battles needed to reach Rank {end_rank} starting from Rank {start_rank}:')
+    fig.suptitle(f'Battles needed to reach rank {end_rank} starting from rank {start_rank} ({rank_type} season):')
     plt.title(f'Assumes {args.win_rate:.0%} win rate and {args.first_rate:.0%} chance of keeping star after a loss.')
-    plt.bar(x, y, align='edge')  # TODO: support multiple plots?
+    plt.bar(x, y, align='edge', width=1)  # TODO: support multiple plots?
     plt.xlabel('Required Battles')
     plt.ylabel('Percent Chance')
     if args.outfile is None:
-        filename = f'wows-ranked-simulation-{args.win_rate * 100:.0f}wr-{args.first_rate * 100:.0f}fr.png'
+        filename = f'wows-ranked-{rank_type}-simulation-{args.win_rate * 100:.0f}wr-{args.first_rate * 100:.0f}fr.png'
     else:
         filename = args.outfile
-    plt.savefig(filename, dpi=500)
+    plt.savefig(filename, dpi=800)
