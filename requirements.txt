@@ -1,7 +1,15 @@
+arch==4.15
 cycler==0.10.0
+Cython==0.29.21
 kiwisolver==1.2.0
 matplotlib==3.2.1
 numpy==1.18.4
+pandas==1.0.5
+patsy==0.5.1
+property-cached==1.6.4
 pyparsing==2.4.7
 python-dateutil==2.8.1
+pytz==2020.1
+scipy==1.5.1
 six==1.15.0
+statsmodels==0.11.1
