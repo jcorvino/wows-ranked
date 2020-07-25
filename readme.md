@@ -45,5 +45,5 @@ The project uses Python 3.8 and matplotlib. See [requirements.txt](https://githu
 Original version by player Terror_Tost from the EU server.
 
 [example-regular]: https://github.com/jcorvino/wows-ranked/raw/master/example-regular-season/wows-ranked-regular-summary-15fr.png "Example summary plot for regular ranked season"
-[example-histogram]: https://github.com/jcorvino/wows-ranked/raw/master/images/wows-ranked-regular-simulation-50wr-15fr.png "Example histogram for regular ranked season"
-[example-sprint]: https://github.com/jcorvino/wows-ranked/raw/master/example-sprint-season/wows-ranked-sprint-summary-15fr.png "Example summary plot for ranked sprint season"
+[example-histogram]: https://github.com/jcorvino/wows-ranked/raw/master/example-sprint-season/wows-ranked-sprint-simulation-50wr-20fr.png "Example histogram for regular ranked season"
+[example-sprint]: https://github.com/jcorvino/wows-ranked/raw/master/example-sprint-season/wows-ranked-sprint-summary-20fr.png "Example summary plot for ranked sprint season"
