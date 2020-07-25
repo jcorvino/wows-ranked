@@ -13,10 +13,10 @@ from ranks import regular_ranks, sprint_ranks
 
 # Defaults
 DEFAULT_FIRST_RATE = 1 / 7  # chance to get 1st place in a battle
-DEFAULT_WIN_RATE = 0.5  # chance to win a battle
+# DEFAULT_WIN_RATE = 0.5  # chance to win a battle
 DEFAULT_MAX_BATTLES = 10000  # maximum number of battles before simulation stops
 DEFAULT_SIMULATION_RUNS = 50000  # number of times to run the simulation
-DEFAULT_WIN_RATE_LIST = [x/100 for x in range(100, 47, -1)]  # win rates (48% to 100%) to simulate
+DEFAULT_WIN_RATE_LIST = [x/100 for x in range(48, 101)]  # win rates to simulate
 
 
 def one_run(wr: float, fr: float, ranks: dict, start_rank: int, end_rank: int,
@@ -98,19 +98,14 @@ def parse_user_args() -> argparse.Namespace:
         description='A program to simulate number of battles required to complete the World of Warships Ranked Season.'
     )
     parser.add_argument(
-        '--single-mode',
-        action='store_true',
-        help='Use this flag to generate a single histogram of battles for a given win rate. \
-            By default this feature is disabled'
-    )
-    parser.add_argument(
         '-w',
-        '--win-rate',
-        metavar='win-rate',
+        '--win-rates',
+        metavar='win-rates',
+        nargs='+',
         type=float,
-        default=DEFAULT_WIN_RATE,
-        help='Chance of a player winning a game (enter as a decimal). \
-            For example a 55%% win rate is 0.55. Default: %(default).2f'
+        default=DEFAULT_WIN_RATE_LIST,
+        help='Chances of a player winning a game that you want to simulate (enter as space separated decimals). \
+            For example if you want to simulate a 55%% and 60%% win rate, enter "0.55 0.60". Default: %(default)s'
     )
     parser.add_argument(
         '-f',
@@ -135,7 +130,7 @@ def parse_user_args() -> argparse.Namespace:
         metavar='simulations',
         type=int,
         default=DEFAULT_SIMULATION_RUNS,
-        help='Number of simulations to run. Default: %(default)d'
+        help='Number of simulations to run for a single win rate. Default: %(default)d'
     )
     parser.add_argument(
         '-o',
@@ -173,13 +168,8 @@ if __name__ == '__main__':
     start_rank = max(ranks.keys())
     end_rank = min(ranks.keys())
 
-    if args.single_mode:
-        win_rates = [args.win_rate]  # simulate a single win rate
-    else:
-        win_rates = DEFAULT_WIN_RATE_LIST
-
     summary_data = {}
-    for wr in win_rates:
+    for wr in args.win_rates:
         # Run simulation in parallel for each win rate
         print(f'Simulating win rate {wr}')
         one_run_inputs = (wr, args.first_rate, ranks, start_rank, end_rank, args.max_battles)

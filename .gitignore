@@ -1,6 +1,6 @@
-# Ignore saved plots except the github example
+# Ignore saved plots except the github examples
 *.png
-!/images/*.png
+!/example*season/*.png
 
 # PyCharm IDE files
 .idea/
