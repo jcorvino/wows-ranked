@@ -7,11 +7,11 @@ python wows-ranked.py -f 0.15 -m 3000 -s 20000 -o ./output
 ```
 
 This will run the program with the following settings: 
-* a first place rate of 0.20 (20% chance of getting first place in a battle),
+* a first place rate of 0.15 (15% chance of getting first place in a battle),
 * a maximum of 3,000 battles per simulation (to prevent infinite loops),
 * 20,000 simulation runs for each win rate.
-* a player win rate of 0.48 to 1.0 (48% to 100% chance of winning a battle),
-* The plot will be saved as a file called "example.png"
+* each win rate from 0.48 to 1.0 will be simulated separately (48% to 100% chance of winning a battle),
+* One plot for each win rate, and the summary plot, will be saved to a folder called "./output"
 
 Adding a `--sprint` flag will simulate a ranked sprint season instead of the regular ranked season.
 
