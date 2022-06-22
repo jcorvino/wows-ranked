@@ -3,7 +3,7 @@ cycler==0.10.0
 Cython==0.29.21
 kiwisolver==1.2.0
 matplotlib==3.2.1
-numpy==1.18.4
+numpy==1.22.0
 pandas==1.0.5
 patsy==0.5.1
 property-cached==1.6.4
